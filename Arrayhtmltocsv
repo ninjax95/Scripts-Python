@@ -1,0 +1,36 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+# URL de la page contenant le tableau
+url = "URL_DU_SITE_WEB"
+
+# Effectuer une requête HTTP pour récupérer le contenu de la page
+response = requests.get(url)
+
+# Vérifier que la requête a réussi
+if response.status_code == 200:
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # Trouver le tableau sur la page (vous devez inspecter la page et identifier les balises HTML appropriées)
+    table = soup.find('table')
+
+    # Ouvrir un fichier CSV en mode écriture avec l'encodage UTF-8
+    with open('donnees.csv', 'w', newline='', encoding='utf-8') as csv_file:
+        csv_writer = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+        # Parcourir les lignes du tableau
+        for row in table.find_all('tr'):
+            # Récupérer toutes les cellules de la ligne
+            cells = row.find_all(['td', 'th'])
+
+            # Extraire le texte de chaque cellule en tenant compte des caractères accentués et des apostrophes
+            row_data = [cell.get_text(strip=True).replace("\n", "").strip() for cell in cells]
+
+            # Écrire la liste de données dans le fichier CSV
+            csv_writer.writerow(row_data)
+
+    print(
+        "Les données ont été extraites et enregistrées dans 'donnees.csv' avec prise en compte des caractères accentués et des apostrophes.")
+else:
+    print("Échec de la requête HTTP. Assurez-vous que l'URL est correcte et que le site est accessible.")
